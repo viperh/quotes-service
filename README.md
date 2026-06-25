@@ -73,6 +73,22 @@ go install github.com/swaggo/swag/cmd/swag@latest
 swag init -g cmd/main.go -o docs --parseDependency --parseInternal
 ```
 
+## CI/CD
+
+`.github/workflows/build-and-publish.yml` runs on every push/PR to `main`/`master`, on `v*` tags, and on manual dispatch:
+
+1. **Build & Test** — `go build`, `go vet`, `go test`.
+2. **Publish** — builds the Docker image and pushes it to **GHCR** (`ghcr.io/<owner>/quotesservice`) using the built-in `GITHUB_TOKEN`. Tags are derived from the branch, semver tags, commit SHA, and `latest` on the default branch. Skipped on pull requests.
+
+### Make the image public (one-time)
+
+GHCR images are **private by default**. After the first successful publish:
+
+1. Go to your GitHub profile/org → **Packages** → select the `quotesservice` package.
+2. **Package settings** → **Danger Zone** → **Change visibility** → **Public**.
+
+(Optionally connect the package to this repository in the same settings page so it inherits repo access.) Once set, future pushes keep it public.
+
 ## Project Structure
 
 ```
