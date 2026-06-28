@@ -3,16 +3,14 @@ services:
     image: ghcr.io/viperh/quotes-service:latest
     # For local development, build from source instead of pulling the image:
     # build: .
-    ports:
-      - "3000:3000"
+    env_file: .env
     environment:
+      # Override host/port from .env: inside the Compose network the app
+      # talks to the "db" service on its internal port, not localhost:5555.
       DB_HOST: db
       DB_PORT: "5432"
-      DB_USER: postgres
-      DB_PASS: postgres
-      DB_NAME: postgres
-      DB_SSL: disable
-      PORT: "3000"
+    ports:
+      - "${PORT}:${PORT}"
     depends_on:
       db:
         condition: service_healthy
@@ -21,15 +19,15 @@ services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
     ports:
-      - "5555:5432"
+      - "${DB_PORT}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
       interval: 5s
       timeout: 5s
       retries: 5
